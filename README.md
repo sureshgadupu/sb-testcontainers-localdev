@@ -1,7 +1,4 @@
-# rabbitmq-producer-testcontainers
+# springboot-testcontainers-localdev
 
-https://fullstackcode.dev/2022/10/08/integration-testing-spring-boot-rabbitmq-with-testcontainers/
+https://fullstackcode.dev/2022/11/25/simplify-local-development-with-testcontainers/
 
-Consumer Repo
-
-https://github.com/sureshgadupu/rabbitmq-consumer-testcontainers

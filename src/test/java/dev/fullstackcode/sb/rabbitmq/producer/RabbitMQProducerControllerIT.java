@@ -25,11 +25,12 @@ import static java.time.temporal.ChronoUnit.SECONDS;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-@Testcontainers
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-@DirtiesContext
+
+//@Testcontainers
+//@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+//@DirtiesContext
 @Slf4j
-public class RabbitMQProducerControllerIT {
+public class RabbitMQProducerControllerIT  extends AbstractIntegrationTest{
     @Autowired
     private RabbitTemplate rabbitTemplate;
 
@@ -42,19 +43,9 @@ public class RabbitMQProducerControllerIT {
     @Autowired
     private TestRestTemplate testRestTemplate;
 
-    static RabbitMQContainer rabbitMQContainer ;
 
 
-    static {
-        rabbitMQContainer = new RabbitMQContainer("rabbitmq:3.10.6-management-alpine")
-                .withStartupTimeout(Duration.of(100, SECONDS));
 
-        rabbitMQContainer.start();
-
-    }
-
-    // RabbitMQ admin Rest API
-    //https://rawcdn.githack.com/rabbitmq/rabbitmq-server/v3.10.7/deps/rabbitmq_management/priv/www/api/index.html
     @Test
     public void testSendMessageToQueueA() throws Exception {
 
@@ -92,7 +83,7 @@ public class RabbitMQProducerControllerIT {
     @Test
     public void testExchangeCreation()  {
 
-       ResponseEntity<Object> exchanges  = testRestTemplate.withBasicAuth("guest","guest").getForEntity("http://"+ rabbitMQContainer.getHost()+":"+rabbitMQContainer.getHttpPort()+"/api/exchanges", Object.class);
+       ResponseEntity<Object> exchanges  = testRestTemplate.withBasicAuth("guest","guest").getForEntity("http://"+ Initializer.rabbitMQContainer.getHost()+":"+ Initializer.rabbitMQContainer.getHttpPort()+"/api/exchanges", Object.class);
        log.info("exchanges {}",exchanges);
        assertEquals(200,exchanges.getStatusCode().value());
        assertTrue(exchanges.getBody().toString().contains("name=exchange.direct, type=direct"));
@@ -102,22 +93,13 @@ public class RabbitMQProducerControllerIT {
     @Test
     public void testQueueCreation() throws JsonProcessingException {
 
-        ResponseEntity<Object> queues  = testRestTemplate.withBasicAuth("guest","guest").getForEntity("http://"+ rabbitMQContainer.getHost()+":"+rabbitMQContainer.getHttpPort()+"/api/queues", Object.class);
+        ResponseEntity<Object> queues  = testRestTemplate.withBasicAuth("guest","guest").getForEntity("http://"+ Initializer.rabbitMQContainer.getHost()+":"+ Initializer.rabbitMQContainer.getHttpPort()+"/api/queues", Object.class);
         log.info("queues {}",queues.getBody().toString());
         assertEquals(200,queues.getStatusCode().value());
         assertTrue(queues.getBody().toString().contains("name=queue.A"));
         assertTrue(queues.getBody().toString().contains("name=queue.B"));
     }
 
-    @DynamicPropertySource
-    public static void properties(DynamicPropertyRegistry registry) {
-        log.info("url ->{}",rabbitMQContainer.getAmqpUrl());
-        log.info("port ->{}",rabbitMQContainer.getHttpPort());
 
-
-        registry.add("spring.rabbitmq.host",() -> rabbitMQContainer.getHost());
-        registry.add("spring.rabbitmq.port",() -> rabbitMQContainer.getAmqpPort());
-
-    }
 
 }
